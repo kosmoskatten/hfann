@@ -12,6 +12,8 @@ module AI.Fann
     ( Fann
     , ActivationFunction (..)
     , createStandard'3L
+    , numInput
+    , numOutput
     , destroy
     , setActivationFunctionHidden
     , setActivationFunctionOutput
@@ -28,8 +30,7 @@ import qualified AI.Fann.Glue as Glue
 
 -- | Handle to a constructed network. Opaque to the user of the library.
 data Fann = Fann
-    { outputs :: !Int
-    , fannRec :: !(Ptr FannRec)
+    { fannRec :: !(Ptr FannRec)
     }
 
 -- | The activation functions used for the neurons during training.
@@ -67,13 +68,26 @@ createStandard'3L :: Int
                   -> Int
                      -- ^ Number of neurons in the output layer.
                   -> IO Fann
-createStandard'3L input hidden output = do
-    fannRec' <- Glue.createStandard'3L (toCUInt input)
-                                       (toCUInt hidden)
-                                       (toCUInt output)
-    return Fann { outputs = output
-                , fannRec = fannRec'
-                }
+createStandard'3L input hidden output =
+    Fann <$> Glue.createStandard'3L (toCUInt input)
+                                    (toCUInt hidden)
+                                    (toCUInt output)
+
+-- | Query the ANN. Get the number of input neurons.
+numInput :: Fann
+             -- ^ The instance to be queried.
+         -> IO Int
+numInput fann = do
+    CUInt r <- Glue.numInput (fannRec fann)
+    return $ fromIntegral r
+
+-- | Query the ANN. Get the number of output neurons.
+numOutput :: Fann
+             -- ^ The instance to be queried.
+          -> IO Int
+numOutput fann = do
+    CUInt r <- Glue.numOutput (fannRec fann)
+    return $ fromIntegral r
 
 -- | Destroys the entire network, properly freeing all the associated memory.
 destroy :: Fann

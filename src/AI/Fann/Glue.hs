@@ -12,6 +12,8 @@
 -- Glue code between Haskell and C for integrating FANN.
 module AI.Fann.Glue
     ( createStandard'3L
+    , numInput
+    , numOutput
     , destroy
     , setActivationFunctionHidden
     , setActivationFunctionOutput
@@ -38,6 +40,20 @@ createStandard'3L input hidden output =
         return fann_create_standard(3, $(unsigned int input),
                                        $(unsigned int hidden),
                                        $(unsigned int output));
+    } |]
+
+-- | Get the number of input neurons.
+numInput :: Ptr FannRec -> IO CUInt
+numInput ptr =
+    [C.block| unsigned int {
+        return $(FannRec *ptr)->num_input;
+    } |]
+
+-- | Get the number of output neurons.
+numOutput :: Ptr FannRec -> IO CUInt
+numOutput ptr =
+    [C.block| unsigned int {
+        return $(FannRec *ptr)->num_output;
     } |]
 
 -- | Destroy an ANN.
