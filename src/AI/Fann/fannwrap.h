@@ -4,9 +4,9 @@
 #include <floatfann.h>
 
 /*
- * Wrap the struct fann record into typedef FANN. With that wrap the
+ * Wrap the struct fann record into typedef FannRec. With that wrap the
  * interaction with inline-c become a little simpler.
  */
- typedef struct fann FANN;
+ typedef struct fann FannRec;
 
  #endif
