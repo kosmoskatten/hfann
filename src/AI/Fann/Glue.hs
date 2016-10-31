@@ -15,9 +15,12 @@ module AI.Fann.Glue
     , destroy
     , setActivationFunctionHidden
     , setActivationFunctionOutput
+    , trainOnFile
+    , save
     ) where
 
-import Foreign.C.Types (CInt, CUInt)
+import Foreign.C.String (CString)
+import Foreign.C.Types (CFloat, CInt, CUInt)
 import Foreign.Ptr (Ptr)
 
 import qualified Language.C.Inline as C
@@ -58,4 +61,22 @@ setActivationFunctionOutput ptr val =
     [C.block| void {
         fann_set_activation_function_output($(FannRec *ptr),
                                             $(int val));
+    } |]
+
+-- | Train using a dataset from the given file.
+trainOnFile :: Ptr FannRec -> CString -> CUInt -> CUInt -> CFloat -> IO ()
+trainOnFile ptr file epochs epochsPerReport desiredError =
+    [C.block| void {
+        fann_train_on_file($(FannRec *ptr),
+                           $(const char *file),
+                           $(unsigned int epochs),
+                           $(unsigned int epochsPerReport),
+                           $(float desiredError));
+    } |]
+
+-- | Save a complete network to file.
+save :: Ptr FannRec -> CString -> IO CInt
+save ptr file =
+    [C.block| int {
+        return fann_save($(FannRec *ptr), $(const char *file));
     } |]

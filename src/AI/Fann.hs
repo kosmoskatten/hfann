@@ -15,9 +15,12 @@ module AI.Fann
     , destroy
     , setActivationFunctionHidden
     , setActivationFunctionOutput
+    , trainOnFile
+    , save
     ) where
 
-import Foreign.C.Types (CInt (..), CUInt (..))
+import Foreign.C.String (withCString)
+import Foreign.C.Types (CFloat (..), CInt (..), CUInt (..))
 import Foreign.Ptr (Ptr)
 
 import AI.Fann.Types (FannRec)
@@ -97,6 +100,39 @@ setActivationFunctionOutput :: Fann
 setActivationFunctionOutput fann activation = do
     let actVal = toCInt $ activationToInt activation
     Glue.setActivationFunctionOutput (fannRec fann) actVal
+
+-- | Train the ANN with a dataset provided in the given file.
+trainOnFile :: Fann
+               -- ^ The instance to be trained.
+            -> FilePath
+               -- ^ File with training dataset.
+            -> Int
+               -- ^ Max number of epochs.
+            -> Int
+               -- ^ Number of epochs between reports.
+            -> Float
+               -- ^ The desired error.
+            -> IO ()
+trainOnFile fann file epochs epochsPerReport desiredError =
+    withCString file $ \file' ->
+        Glue.trainOnFile (fannRec fann) file' (toCUInt epochs)
+                         (toCUInt epochsPerReport) (CFloat desiredError)
+
+-- | Save the entire network to a configuration file.
+--
+-- The configuration file contains all information about the neural
+-- network and enables 'createFromFile' to create an exact copy of
+-- the neural network and all of the parameters associated
+-- with the neural network.
+save :: Fann
+        -- ^ The instance to be saved.
+     -> FilePath
+        -- ^ Filepath to where to save configuration.
+     -> IO Bool
+save fann file =
+    withCString file $ \file' -> do
+        CInt r <- Glue.save (fannRec fann) file'
+        return (r /= 0)
 
 toCInt :: Integral a => a -> CInt
 toCInt = CInt . fromIntegral

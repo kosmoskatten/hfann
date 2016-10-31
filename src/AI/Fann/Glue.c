@@ -32,3 +32,21 @@ void inline_c_AI_Fann_Glue_3_e8f16d5d23676e26b51c4ad718f703e496f54e77(FannRec * 
     
 }
 
+
+void inline_c_AI_Fann_Glue_4_45727ff3ac5883620c538e7bb211d467c3a469e0(FannRec * ptr_inline_c_0, const char * file_inline_c_1, unsigned epochs_inline_c_2, unsigned epochsPerReport_inline_c_3, float desiredError_inline_c_4) {
+
+        fann_train_on_file(ptr_inline_c_0,
+                           file_inline_c_1,
+                           epochs_inline_c_2,
+                           epochsPerReport_inline_c_3,
+                           desiredError_inline_c_4);
+    
+}
+
+
+int inline_c_AI_Fann_Glue_5_e838a7ff74cbdcef110dfc5ef9539fec6a4bdbda(FannRec * ptr_inline_c_0, const char * file_inline_c_1) {
+
+        return fann_save(ptr_inline_c_0, file_inline_c_1);
+    
+}
+
