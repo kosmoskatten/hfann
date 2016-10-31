@@ -12,6 +12,7 @@ module AI.Fann
     ( Fann
     , ActivationFunction (..)
     , createStandard'3L
+    , run
     , numInput
     , numOutput
     , destroy
@@ -19,13 +20,17 @@ module AI.Fann
     , setActivationFunctionOutput
     , trainOnFile
     , save
+    , createFromFile
     ) where
 
 import Foreign.C.String (withCString)
 import Foreign.C.Types (CFloat (..), CInt (..), CUInt (..))
 import Foreign.Ptr (Ptr)
 
+import qualified Data.Vector.Storable as Vec
+
 import AI.Fann.Types (FannRec)
+
 import qualified AI.Fann.Glue as Glue
 
 -- | Handle to a constructed network. Opaque to the user of the library.
@@ -72,6 +77,18 @@ createStandard'3L input hidden output =
     Fann <$> Glue.createStandard'3L (toCUInt input)
                                     (toCUInt hidden)
                                     (toCUInt output)
+
+-- | Will run input through the neural network, returning an array
+-- of outputs, the number of which being equal to the number of neurons
+-- in the output layer.
+run :: Fann
+       -- ^ The instance to run.
+    -> Vec.Vector Float
+       -- ^ Input data to the network.
+    -> IO (Vec.Vector Float)
+run fann input =
+    Vec.map (\(CFloat f) -> f) <$>
+        (Glue.run (fannRec fann) $ Vec.map CFloat input)
 
 -- | Query the ANN. Get the number of input neurons.
 numInput :: Fann
@@ -147,6 +164,15 @@ save fann file =
     withCString file $ \file' -> do
         CInt r <- Glue.save (fannRec fann) file'
         return (r /= 0)
+
+-- | Constructs a backpropagation neural network from a configuration
+-- file, which has been saved by 'save'.
+createFromFile :: FilePath
+                  -- ^ Path to the network to load.
+               -> IO Fann
+createFromFile file =
+    withCString file $ \file' ->
+        Fann <$> Glue.createFromFile file'
 
 toCInt :: Integral a => a -> CInt
 toCInt = CInt . fromIntegral

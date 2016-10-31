@@ -12,6 +12,7 @@
 -- Glue code between Haskell and C for integrating FANN.
 module AI.Fann.Glue
     ( createStandard'3L
+    , run
     , numInput
     , numOutput
     , destroy
@@ -19,12 +20,15 @@ module AI.Fann.Glue
     , setActivationFunctionOutput
     , trainOnFile
     , save
+    , createFromFile
     ) where
 
 import Foreign.C.String (CString)
 import Foreign.C.Types (CFloat, CInt, CUInt)
+import Foreign.ForeignPtr (newForeignPtr_)
 import Foreign.Ptr (Ptr)
 
+import qualified Data.Vector.Storable as Vec
 import qualified Language.C.Inline as C
 
 import AI.Fann.Types (FannRec, fannCtx)
@@ -41,6 +45,17 @@ createStandard'3L input hidden output =
                                        $(unsigned int hidden),
                                        $(unsigned int output));
     } |]
+
+-- | Run the network with input data.
+run :: Ptr FannRec -> Vec.Vector CFloat -> IO (Vec.Vector CFloat)
+run ptr input =
+    Vec.unsafeWith input $ \inputPtr -> do
+        outputPtr <- newForeignPtr_ =<<
+            [C.block| float *{
+                return fann_run($(FannRec *ptr), $(float* inputPtr));
+            } |]
+        numOutput' <- fromIntegral <$> numOutput ptr
+        return $ Vec.unsafeFromForeignPtr0 outputPtr numOutput'
 
 -- | Get the number of input neurons.
 numInput :: Ptr FannRec -> IO CUInt
@@ -95,4 +110,11 @@ save :: Ptr FannRec -> CString -> IO CInt
 save ptr file =
     [C.block| int {
         return fann_save($(FannRec *ptr), $(const char *file));
+    } |]
+
+-- | Create a network from file.
+createFromFile :: CString -> IO (Ptr FannRec)
+createFromFile file =
+    [C.block| FannRec *{
+        return fann_create_from_file($(const char* file));
     } |]

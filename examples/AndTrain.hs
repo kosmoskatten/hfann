@@ -15,8 +15,8 @@ import AI.Fann ( ActivationFunction (..)
 main :: IO ()
 main = do
     fann <- createStandard'3L 2 3 1
-    setActivationFunctionHidden fann SigmoidSymmetric
-    setActivationFunctionOutput fann SigmoidSymmetric
+    setActivationFunctionHidden fann Sigmoid
+    setActivationFunctionOutput fann Sigmoid
 
     trainOnFile fann "and.data" 5000000 1000 0.001
     void $ save fann "and.net"
