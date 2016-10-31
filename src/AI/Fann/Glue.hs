@@ -12,18 +12,50 @@
 -- Glue code between Haskell and C for integrating FANN.
 module AI.Fann.Glue
     ( createStandard'3L
+    , destroy
+    , setActivationFunctionHidden
+    , setActivationFunctionOutput
     ) where
 
-import Foreign.C.Types
+import Foreign.C.Types (CInt, CUInt)
+import Foreign.Ptr (Ptr)
+
 import qualified Language.C.Inline as C
 
-C.include "<stdio.h>"
+import AI.Fann.Types (FannRec, fannCtx)
+
+C.context fannCtx
+
 C.include "fannwrap.h"
 
-createStandard'3L :: CUInt -> CUInt -> CUInt -> IO ()
+-- | Create a three level ANN.
+createStandard'3L :: CUInt -> CUInt -> CUInt -> IO (Ptr FannRec)
 createStandard'3L input hidden output =
+    [C.block| FannRec *{
+        return fann_create_standard(3, $(unsigned int input),
+                                       $(unsigned int hidden),
+                                       $(unsigned int output));
+    } |]
+
+-- | Destroy an ANN.
+destroy :: Ptr FannRec -> IO ()
+destroy ptr =
     [C.block| void {
-        printf("Got %u %u %u", $(unsigned int input),
-                               $(unsigned int hidden),
-                               $(unsigned int output));
+        fann_destroy($(FannRec *ptr));
+    } |]
+
+-- | Set the activation function for all the hidden layers.
+setActivationFunctionHidden :: Ptr FannRec -> CInt -> IO ()
+setActivationFunctionHidden ptr val =
+    [C.block| void {
+        fann_set_activation_function_hidden($(FannRec *ptr),
+                                            $(int val));
+    } |]
+
+-- | Set the activation function for all the output layer.
+setActivationFunctionOutput :: Ptr FannRec -> CInt -> IO ()
+setActivationFunctionOutput ptr val =
+    [C.block| void {
+        fann_set_activation_function_output($(FannRec *ptr),
+                                            $(int val));
     } |]

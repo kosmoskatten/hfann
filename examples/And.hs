@@ -2,9 +2,16 @@ module Main
     ( main
     ) where
 
-import AI.Fann (Fann, createStandard'3L)
+import AI.Fann ( ActivationFunction (..)
+               , createStandard'3L
+               , destroy
+               , setActivationFunctionHidden
+               , setActivationFunctionOutput
+               )
 
 main :: IO ()
 main = do
-    _ <- createStandard'3L 2 3 1
-    return ()
+    fann <- createStandard'3L 2 3 1
+    setActivationFunctionHidden fann SigmoidSymmetric
+    setActivationFunctionOutput fann SigmoidSymmetric
+    destroy fann
