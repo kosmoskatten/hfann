@@ -8,6 +8,8 @@
 --
 -- Haskell bindings to the Fast Artificial Neural Network Library, FANN.
 -- See <http://leenissen.dk/fann/wp/> for more information.
+--
+-- The Haskell bindings is implementing a selected subset of the C API.
 module AI.Fann
     ( Fann
     , ActivationFunction (..)
@@ -15,6 +17,8 @@ module AI.Fann
     , run
     , numInput
     , numOutput
+    , learningRate
+    , setLearningRate
     , destroy
     , setActivationFunctionHidden
     , setActivationFunctionOutput
@@ -24,7 +28,7 @@ module AI.Fann
     ) where
 
 import Foreign.C.String (withCString)
-import Foreign.C.Types (CFloat (..), CInt (..), CUInt (..))
+import Foreign.C.Types (CFloat (..), CInt (..))
 import Foreign.Ptr (Ptr)
 
 import qualified Data.Vector.Storable as Vec
@@ -53,9 +57,9 @@ createStandard'3L :: Int
                      -- ^ Number of neurons in the output layer.
                   -> IO Fann
 createStandard'3L input hidden output =
-    Fann <$> Glue.createStandard'3L (toCUInt input)
-                                    (toCUInt hidden)
-                                    (toCUInt output)
+    Fann <$> Glue.createStandard'3L (fromIntegral input)
+                                    (fromIntegral hidden)
+                                    (fromIntegral output)
 
 -- | Will run input through the neural network, returning an array
 -- of outputs, the number of which being equal to the number of neurons
@@ -72,18 +76,29 @@ run fann input =
 -- | Get the number of input neurons.
 numInput :: Fann
              -- ^ The instance to be queried.
-         -> IO Int
-numInput fann = do
-    CUInt r <- Glue.numInput (fannRec fann)
-    return $ fromIntegral r
+         -> Int
+numInput = fromIntegral . Glue.numInput . fannRec
 
 -- | Get the number of output neurons.
 numOutput :: Fann
              -- ^ The instance to be queried.
-          -> IO Int
-numOutput fann = do
-    CUInt r <- Glue.numOutput (fannRec fann)
-    return $ fromIntegral r
+          -> Int
+numOutput = fromIntegral . Glue.numOutput . fannRec
+
+-- | Get the learning rate (default 0.7).
+learningRate :: Fann
+                -- ^ The instance to be queried.
+             -> Float
+learningRate = fromCFloat . Glue.learningRate . fannRec
+
+-- | Set the learning rate.
+setLearningRate :: Fann
+                   -- ^ The instance to be updated.
+                -> Float
+                   -- ^ The new learning rate.
+                -> IO ()
+setLearningRate fann rate =
+    Glue.setLearningRate (fannRec fann) (CFloat rate)
 
 -- | Destroys the entire network, properly freeing all the associated memory.
 destroy :: Fann
@@ -98,7 +113,7 @@ setActivationFunctionHidden :: Fann
                                -- ^ The given 'ActivationFunction'.
                             -> IO ()
 setActivationFunctionHidden fann activation = do
-    let actVal = toCInt $ activationToInt activation
+    let actVal = fromIntegral $ activationToInt activation
     Glue.setActivationFunctionHidden (fannRec fann) actVal
 
 -- | Set the activation function for all of the output layer.
@@ -108,7 +123,7 @@ setActivationFunctionOutput :: Fann
                                -- ^ The given 'ActivationFunction'.
                             -> IO ()
 setActivationFunctionOutput fann activation = do
-    let actVal = toCInt $ activationToInt activation
+    let actVal = fromIntegral $ activationToInt activation
     Glue.setActivationFunctionOutput (fannRec fann) actVal
 
 -- | Train the ANN with a dataset provided in the given file.
@@ -125,8 +140,8 @@ trainOnFile :: Fann
             -> IO ()
 trainOnFile fann file epochs epochsPerReport desiredError =
     withCString file $ \file' ->
-        Glue.trainOnFile (fannRec fann) file' (toCUInt epochs)
-                         (toCUInt epochsPerReport) (CFloat desiredError)
+        Glue.trainOnFile (fannRec fann) file' (fromIntegral epochs)
+                         (fromIntegral epochsPerReport) (CFloat desiredError)
 
 -- | Save the entire network to a configuration file.
 --
@@ -153,8 +168,5 @@ createFromFile file =
     withCString file $ \file' ->
         Fann <$> Glue.createFromFile file'
 
-toCInt :: Integral a => a -> CInt
-toCInt = CInt . fromIntegral
-
-toCUInt :: Integral a => a -> CUInt
-toCUInt = CUInt . fromIntegral
+fromCFloat :: CFloat -> Float
+fromCFloat (CFloat f) = f

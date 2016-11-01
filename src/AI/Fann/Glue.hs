@@ -15,6 +15,8 @@ module AI.Fann.Glue
     , run
     , numInput
     , numOutput
+    , learningRate
+    , setLearningRate
     , destroy
     , setActivationFunctionHidden
     , setActivationFunctionOutput
@@ -54,21 +56,34 @@ run ptr input =
             [C.block| float *{
                 return fann_run($(FannRec *ptr), $(float* inputPtr));
             } |]
-        numOutput' <- fromIntegral <$> numOutput ptr
-        return $ Vec.unsafeFromForeignPtr0 outputPtr numOutput'
+        return $ Vec.unsafeFromForeignPtr0 outputPtr (fromIntegral $ numOutput ptr)
 
 -- | Get the number of input neurons.
-numInput :: Ptr FannRec -> IO CUInt
+numInput :: Ptr FannRec -> CUInt
 numInput ptr =
-    [C.block| unsigned int {
-        return fann_get_num_input($(FannRec *ptr));
+    [C.pure| unsigned int {
+        fann_get_num_input($(FannRec *ptr))
     } |]
 
 -- | Get the number of output neurons.
-numOutput :: Ptr FannRec -> IO CUInt
+numOutput :: Ptr FannRec -> CUInt
 numOutput ptr =
-    [C.block| unsigned int {
-        return fann_get_num_output($(FannRec *ptr));
+    [C.pure| unsigned int {
+        fann_get_num_output($(FannRec *ptr))
+    } |]
+
+-- | Get the learning rate.
+learningRate :: Ptr FannRec -> CFloat
+learningRate ptr =
+    [C.pure| float {
+        fann_get_learning_rate($(FannRec *ptr))
+    } |]
+
+-- | Set the learning rate.
+setLearningRate :: Ptr FannRec -> CFloat -> IO ()
+setLearningRate ptr rate =
+    [C.block| void {
+        fann_set_learning_rate($(FannRec *ptr), $(float rate));
     } |]
 
 -- | Destroy an ANN.
