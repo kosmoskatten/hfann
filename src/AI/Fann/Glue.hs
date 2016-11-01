@@ -22,7 +22,9 @@ module AI.Fann.Glue
     , setLearningRate
     , setActivationFunctionHidden
     , setActivationFunctionOutput
+    , mse
     , trainOnFile
+    , train
     ) where
 
 import Foreign.C.String (CString)
@@ -123,6 +125,13 @@ setActivationFunctionOutput ptr val =
                                             $(int val));
     } |]
 
+-- | Read the mean squared error from the network.
+mse :: Ptr FannRec -> CFloat
+mse ptr =
+    [C.pure| float {
+        fann_get_MSE($(FannRec *ptr))
+    } |]
+
 -- | Train using a dataset from the given file.
 trainOnFile :: Ptr FannRec -> CString -> CUInt -> CUInt -> CFloat -> IO ()
 trainOnFile ptr file epochs epochsPerReport desiredError =
@@ -133,3 +142,12 @@ trainOnFile ptr file epochs epochsPerReport desiredError =
                            $(unsigned int epochsPerReport),
                            $(float desiredError));
     } |]
+
+-- | Train one iteration with a set of inputs, and a set of desired outputs.
+train :: Ptr FannRec -> Vec.Vector CFloat -> Vec.Vector CFloat -> IO ()
+train ptr input output =
+    Vec.unsafeWith input $ \inputPtr ->
+        Vec.unsafeWith output $ \outputPtr ->
+            [C.block| void {
+                fann_train($(FannRec *ptr), $(float *inputPtr), $(float *outputPtr));
+            } |]

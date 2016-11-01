@@ -82,7 +82,14 @@ void inline_c_AI_Fann_Glue_10_e8f16d5d23676e26b51c4ad718f703e496f54e77(FannRec *
 }
 
 
-void inline_c_AI_Fann_Glue_11_45727ff3ac5883620c538e7bb211d467c3a469e0(FannRec * ptr_inline_c_0, const char * file_inline_c_1, unsigned epochs_inline_c_2, unsigned epochsPerReport_inline_c_3, float desiredError_inline_c_4) {
+float inline_c_AI_Fann_Glue_11_cd7d16fd81739b65a6f4b1b11fa1f38971132c02(FannRec * ptr_inline_c_0) {
+return (
+        fann_get_MSE(ptr_inline_c_0)
+    );
+}
+
+
+void inline_c_AI_Fann_Glue_12_45727ff3ac5883620c538e7bb211d467c3a469e0(FannRec * ptr_inline_c_0, const char * file_inline_c_1, unsigned epochs_inline_c_2, unsigned epochsPerReport_inline_c_3, float desiredError_inline_c_4) {
 
         fann_train_on_file(ptr_inline_c_0,
                            file_inline_c_1,
@@ -90,5 +97,12 @@ void inline_c_AI_Fann_Glue_11_45727ff3ac5883620c538e7bb211d467c3a469e0(FannRec *
                            epochsPerReport_inline_c_3,
                            desiredError_inline_c_4);
     
+}
+
+
+void inline_c_AI_Fann_Glue_13_4235c2cd92c2b4520a2dec51c44a0ed45c37df4a(FannRec * ptr_inline_c_0, float * inputPtr_inline_c_1, float * outputPtr_inline_c_2) {
+
+                fann_train(ptr_inline_c_0, inputPtr_inline_c_1, outputPtr_inline_c_2);
+            
 }
 

@@ -24,7 +24,9 @@ module AI.Fann
     , setLearningRate
     , setActivationFunctionHidden
     , setActivationFunctionOutput
+    , mse
     , trainOnFile
+    , train
     ) where
 
 import Foreign.C.String (withCString)
@@ -83,8 +85,7 @@ destroy = Glue.destroy . fannRec
 -- in the output layer.
 run :: Fann -> Vec.Vector Float -> IO (Vec.Vector Float)
 run fann input =
-    Vec.map (\(CFloat f) -> f) <$>
-        (Glue.run (fannRec fann) $ Vec.map CFloat input)
+    fromCFloatVec <$> (Glue.run (fannRec fann) $ toCFloatVec input)
 
 -- | Get the number of input neurons.
 numInput :: Fann -> Int
@@ -115,6 +116,14 @@ setActivationFunctionOutput fann activation = do
     let actVal = fromIntegral $ activationToInt activation
     Glue.setActivationFunctionOutput (fannRec fann) actVal
 
+-- | Read the mean squared error from the network.
+--
+-- Reads the mean square error from the network. This value is calculated during
+-- training or testing, and can therefore sometimes be a bit off if the weights
+-- have been changed since the last calculation of the value.
+mse :: Fann -> Float
+mse = fromCFloat . Glue.mse . fannRec
+
 -- | Train the ANN with a dataset provided in the given file.
 trainOnFile :: Fann -> FilePath -> Int -> Int -> Float -> IO ()
 trainOnFile fann file epochs epochsPerReport desiredError =
@@ -122,5 +131,21 @@ trainOnFile fann file epochs epochsPerReport desiredError =
         Glue.trainOnFile (fannRec fann) file' (fromIntegral epochs)
                          (fromIntegral epochsPerReport) (CFloat desiredError)
 
+-- | Train one iteration with a set of inputs, and a set of desired outputs.
+-- The size of the input must be exact 'numInput' and the desired output must
+-- exact 'numOutput'.
+train :: Fann -> Vec.Vector Float -> Vec.Vector Float -> IO ()
+train fann input output =
+    Glue.train (fannRec fann) (toCFloatVec input) (toCFloatVec output)
+
 fromCFloat :: CFloat -> Float
 fromCFloat (CFloat f) = f
+{-# INLINE fromCFloat #-}
+
+toCFloatVec :: Vec.Vector Float -> Vec.Vector CFloat
+toCFloatVec = Vec.map CFloat
+{-# INLINE toCFloatVec #-}
+
+fromCFloatVec :: Vec.Vector CFloat -> Vec.Vector Float
+fromCFloatVec = Vec.map fromCFloat
+{-# INLINE fromCFloatVec #-}
