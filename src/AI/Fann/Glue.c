@@ -17,16 +17,16 @@ float * inline_c_AI_Fann_Glue_1_2d84b8b4a17a99609d146b317d0015edbe26bce9(FannRec
 }
 
 
-unsigned inline_c_AI_Fann_Glue_2_1830a0f2fecc71d998cbe03a9a13e3bafd44482d(FannRec * ptr_inline_c_0) {
+unsigned inline_c_AI_Fann_Glue_2_de94fff0e49511e52ec6fa47880433e1c357e6a4(FannRec * ptr_inline_c_0) {
 
-        return ptr_inline_c_0->num_input;
+        return fann_get_num_input(ptr_inline_c_0);
     
 }
 
 
-unsigned inline_c_AI_Fann_Glue_3_6b90ebd34a5957d33bcfdfbd4c0916629bcb5271(FannRec * ptr_inline_c_0) {
+unsigned inline_c_AI_Fann_Glue_3_010f48c60c2e49fcbb91d8963b1c06ab4193b458(FannRec * ptr_inline_c_0) {
 
-        return ptr_inline_c_0->num_output;
+        return fann_get_num_output(ptr_inline_c_0);
     
 }
 

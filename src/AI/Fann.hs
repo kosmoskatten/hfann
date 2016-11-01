@@ -69,7 +69,7 @@ run fann input =
     Vec.map (\(CFloat f) -> f) <$>
         (Glue.run (fannRec fann) $ Vec.map CFloat input)
 
--- | Query the ANN. Get the number of input neurons.
+-- | Get the number of input neurons.
 numInput :: Fann
              -- ^ The instance to be queried.
          -> IO Int
@@ -77,7 +77,7 @@ numInput fann = do
     CUInt r <- Glue.numInput (fannRec fann)
     return $ fromIntegral r
 
--- | Query the ANN. Get the number of output neurons.
+-- | Get the number of output neurons.
 numOutput :: Fann
              -- ^ The instance to be queried.
           -> IO Int

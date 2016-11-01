@@ -61,14 +61,14 @@ run ptr input =
 numInput :: Ptr FannRec -> IO CUInt
 numInput ptr =
     [C.block| unsigned int {
-        return $(FannRec *ptr)->num_input;
+        return fann_get_num_input($(FannRec *ptr));
     } |]
 
 -- | Get the number of output neurons.
 numOutput :: Ptr FannRec -> IO CUInt
 numOutput ptr =
     [C.block| unsigned int {
-        return $(FannRec *ptr)->num_output;
+        return fann_get_num_output($(FannRec *ptr));
     } |]
 
 -- | Destroy an ANN.
