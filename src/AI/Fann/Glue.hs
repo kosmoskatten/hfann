@@ -12,17 +12,17 @@
 -- Glue code between Haskell and C for integrating FANN.
 module AI.Fann.Glue
     ( createStandard'3L
+    , createFromFile
+    , save
+    , destroy
     , run
     , numInput
     , numOutput
     , learningRate
     , setLearningRate
-    , destroy
     , setActivationFunctionHidden
     , setActivationFunctionOutput
     , trainOnFile
-    , save
-    , createFromFile
     ) where
 
 import Foreign.C.String (CString)
@@ -46,6 +46,27 @@ createStandard'3L input hidden output =
         return fann_create_standard(3, $(unsigned int input),
                                        $(unsigned int hidden),
                                        $(unsigned int output));
+    } |]
+
+-- | Create a network from file.
+createFromFile :: CString -> IO (Ptr FannRec)
+createFromFile file =
+    [C.block| FannRec *{
+    return fann_create_from_file($(const char* file));
+    } |]
+
+-- | Save a complete network to file.
+save :: Ptr FannRec -> CString -> IO CInt
+save ptr file =
+    [C.block| int {
+        return fann_save($(FannRec *ptr), $(const char *file));
+    } |]
+
+-- | Destroy an ANN.
+destroy :: Ptr FannRec -> IO ()
+destroy ptr =
+    [C.block| void {
+        fann_destroy($(FannRec *ptr));
     } |]
 
 -- | Run the network with input data.
@@ -86,13 +107,6 @@ setLearningRate ptr rate =
         fann_set_learning_rate($(FannRec *ptr), $(float rate));
     } |]
 
--- | Destroy an ANN.
-destroy :: Ptr FannRec -> IO ()
-destroy ptr =
-    [C.block| void {
-        fann_destroy($(FannRec *ptr));
-    } |]
-
 -- | Set the activation function for all the hidden layers.
 setActivationFunctionHidden :: Ptr FannRec -> CInt -> IO ()
 setActivationFunctionHidden ptr val =
@@ -118,18 +132,4 @@ trainOnFile ptr file epochs epochsPerReport desiredError =
                            $(unsigned int epochs),
                            $(unsigned int epochsPerReport),
                            $(float desiredError));
-    } |]
-
--- | Save a complete network to file.
-save :: Ptr FannRec -> CString -> IO CInt
-save ptr file =
-    [C.block| int {
-        return fann_save($(FannRec *ptr), $(const char *file));
-    } |]
-
--- | Create a network from file.
-createFromFile :: CString -> IO (Ptr FannRec)
-createFromFile file =
-    [C.block| FannRec *{
-        return fann_create_from_file($(const char* file));
     } |]

@@ -14,17 +14,17 @@ module AI.Fann
     ( Fann
     , ActivationFunction (..)
     , createStandard'3L
+    , createFromFile
+    , save
+    , destroy
     , run
     , numInput
     , numOutput
     , learningRate
     , setLearningRate
-    , destroy
     , setActivationFunctionHidden
     , setActivationFunctionOutput
     , trainOnFile
-    , save
-    , createFromFile
     ) where
 
 import Foreign.C.String (withCString)
@@ -60,6 +60,37 @@ createStandard'3L input hidden output =
     Fann <$> Glue.createStandard'3L (fromIntegral input)
                                     (fromIntegral hidden)
                                     (fromIntegral output)
+
+-- | Constructs a backpropagation neural network from a configuration
+-- file, which has been saved by 'save'.
+createFromFile :: FilePath
+                  -- ^ Path to the network to load.
+               -> IO Fann
+createFromFile file =
+    withCString file $ \file' ->
+        Fann <$> Glue.createFromFile file'
+
+-- | Save the entire network to a configuration file.
+--
+-- The configuration file contains all information about the neural
+-- network and enables 'createFromFile' to create an exact copy of
+-- the neural network and all of the parameters associated
+-- with the neural network.
+save :: Fann
+        -- ^ The instance to be saved.
+     -> FilePath
+        -- ^ Filepath to where to save configuration.
+     -> IO Bool
+save fann file =
+    withCString file $ \file' -> do
+        CInt r <- Glue.save (fannRec fann) file'
+        return (r /= 0)
+
+-- | Destroys the entire network, properly freeing all the associated memory.
+destroy :: Fann
+           -- ^ The instance to be destroyed.
+        -> IO ()
+destroy = Glue.destroy . fannRec
 
 -- | Will run input through the neural network, returning an array
 -- of outputs, the number of which being equal to the number of neurons
@@ -100,12 +131,6 @@ setLearningRate :: Fann
 setLearningRate fann rate =
     Glue.setLearningRate (fannRec fann) (CFloat rate)
 
--- | Destroys the entire network, properly freeing all the associated memory.
-destroy :: Fann
-           -- ^ The instance to be destroyed.
-        -> IO ()
-destroy = Glue.destroy . fannRec
-
 -- | Set the activation function for all of the hidden layers.
 setActivationFunctionHidden :: Fann
                                -- ^ The instance to be updated.
@@ -142,31 +167,6 @@ trainOnFile fann file epochs epochsPerReport desiredError =
     withCString file $ \file' ->
         Glue.trainOnFile (fannRec fann) file' (fromIntegral epochs)
                          (fromIntegral epochsPerReport) (CFloat desiredError)
-
--- | Save the entire network to a configuration file.
---
--- The configuration file contains all information about the neural
--- network and enables 'createFromFile' to create an exact copy of
--- the neural network and all of the parameters associated
--- with the neural network.
-save :: Fann
-        -- ^ The instance to be saved.
-     -> FilePath
-        -- ^ Filepath to where to save configuration.
-     -> IO Bool
-save fann file =
-    withCString file $ \file' -> do
-        CInt r <- Glue.save (fannRec fann) file'
-        return (r /= 0)
-
--- | Constructs a backpropagation neural network from a configuration
--- file, which has been saved by 'save'.
-createFromFile :: FilePath
-                  -- ^ Path to the network to load.
-               -> IO Fann
-createFromFile file =
-    withCString file $ \file' ->
-        Fann <$> Glue.createFromFile file'
 
 fromCFloat :: CFloat -> Float
 fromCFloat (CFloat f) = f
