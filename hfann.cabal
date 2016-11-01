@@ -53,3 +53,13 @@ executable and-test
   default-language:    Haskell2010
   ghc-options:         -Wall
   extra-libraries:     fann
+
+executable and-explicit-train
+  hs-source-dirs:      examples
+  main-is:             AndExplicitTrain.hs
+  build-depends:       base >= 4.7 && < 5
+                     , hfann
+                     , vector
+  default-language:    Haskell2010
+  ghc-options:         -Wall
+  extra-libraries:     fann
