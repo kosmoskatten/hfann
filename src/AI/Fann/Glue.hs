@@ -31,7 +31,7 @@ import Foreign.Ptr (Ptr)
 import qualified Data.Vector.Storable as Vec
 import qualified Language.C.Inline as C
 
-import AI.Fann.Types (FannRec, fannCtx)
+import AI.Fann.FannCtx (FannRec, fannCtx)
 
 C.context fannCtx
 

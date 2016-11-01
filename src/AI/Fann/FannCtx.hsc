@@ -3,15 +3,15 @@
 {-# LANGUAGE QuasiQuotes       #-}
 
 -- |
--- Module:      AI.Fann.Glue.Types
+-- Module:      AI.Fann.FannCtx
 -- Copyright:   (C) 2016 Patrik Sandahl
 -- Licence:     MIT
 -- Maintainer:  Patrik Sandahl <patrik.sandahl@gmail.com>
 -- Stability:   experimental
 -- Portability: Linux
 --
--- Types for the glue between Haskell and C.
-module AI.Fann.Types
+-- Types and inline-c context for the glue between Haskell and C.
+module AI.Fann.FannCtx
     ( FannRec
     , fannCtx
     ) where

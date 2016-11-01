@@ -29,7 +29,8 @@ import Foreign.Ptr (Ptr)
 
 import qualified Data.Vector.Storable as Vec
 
-import AI.Fann.Types (FannRec)
+import AI.Fann.FannCtx (FannRec)
+import AI.Fann.Types (ActivationFunction (..), activationToInt)
 
 import qualified AI.Fann.Glue as Glue
 
@@ -37,28 +38,6 @@ import qualified AI.Fann.Glue as Glue
 data Fann = Fann
     { fannRec :: !(Ptr FannRec)
     }
-
--- | The activation functions used for the neurons during training.
-data ActivationFunction
-    = Linear
-    | Threshold
-    | ThresholdSymmetric
-    | Sigmoid
-    | SigmoidStepwise
-    | SigmoidSymmetric
-    | SigmoidSymmetricStepwise
-    | Gaussian
-    | GaussianSymmetric
-    | GaussianStepwise
-    | Elliot
-    | ElliotSymmetric
-    | LinearPiece
-    | LinearPieceSymmetric
-    | SinSymmetric
-    | CosSymmetric
-    | Sin
-    | Cos
-    deriving (Eq, Show)
 
 -- | Create a three layer standard fully connected backpropagation neural
 -- network. There will be a bias neuron in each layer (except the output layer),
@@ -179,24 +158,3 @@ toCInt = CInt . fromIntegral
 
 toCUInt :: Integral a => a -> CUInt
 toCUInt = CUInt . fromIntegral
-
--- | Translate an 'ActivationFunction' to Int.
-activationToInt :: ActivationFunction -> Int
-activationToInt Linear                   = 0
-activationToInt Threshold                = 1
-activationToInt ThresholdSymmetric       = 2
-activationToInt Sigmoid                  = 3
-activationToInt SigmoidStepwise          = 4
-activationToInt SigmoidSymmetric         = 5
-activationToInt SigmoidSymmetricStepwise = 6
-activationToInt Gaussian                 = 7
-activationToInt GaussianSymmetric        = 8
-activationToInt GaussianStepwise         = 9
-activationToInt Elliot                   = 10
-activationToInt ElliotSymmetric          = 11
-activationToInt LinearPiece              = 12
-activationToInt LinearPieceSymmetric     = 13
-activationToInt SinSymmetric             = 14
-activationToInt CosSymmetric             = 15
-activationToInt Sin                      = 16
-activationToInt Cos                      = 17
