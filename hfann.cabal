@@ -32,7 +32,8 @@ library
   default-language:    Haskell2010
   ghc-options:         -Wall
   cc-options:          -Wall -Werror -O2
-  include-dirs:        /home/uabpasa/repos/hfann/src/AI/Fann
+  include-dirs:        /home/patrik/repos/hfann/src/AI/Fann
+  extra-libraries:     fann
 
  -- Examples
 executable and-train
@@ -42,7 +43,6 @@ executable and-train
                      , hfann
   default-language:    Haskell2010
   ghc-options:         -Wall
-  extra-libraries:     fann
 
 executable and-test
   hs-source-dirs:      examples
@@ -52,7 +52,6 @@ executable and-test
                      , vector
   default-language:    Haskell2010
   ghc-options:         -Wall
-  extra-libraries:     fann
 
 executable and-explicit-train
   hs-source-dirs:      examples
@@ -62,4 +61,3 @@ executable and-explicit-train
                      , vector
   default-language:    Haskell2010
   ghc-options:         -Wall
-  extra-libraries:     fann

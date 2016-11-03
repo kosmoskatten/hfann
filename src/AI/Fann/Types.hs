@@ -8,8 +8,15 @@
 
 module AI.Fann.Types
     ( ActivationFunction (..)
+    , InputData
+    , OutputData
     , activationToInt
     ) where
+
+import qualified Data.Vector.Storable as Vec
+
+type InputData  = Vec.Vector Float
+type OutputData = Vec.Vector Float
 
 -- | The activation functions used for the neurons during training.
 data ActivationFunction

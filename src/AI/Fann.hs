@@ -13,6 +13,8 @@
 module AI.Fann
     ( Fann
     , ActivationFunction (..)
+    , InputData
+    , OutputData
     , createStandard'3L
     , createFromFile
     , save
@@ -36,7 +38,9 @@ import Foreign.Ptr (Ptr)
 import qualified Data.Vector.Storable as Vec
 
 import AI.Fann.FannCtx (FannRec)
-import AI.Fann.Types (ActivationFunction (..), activationToInt)
+import AI.Fann.Types ( ActivationFunction (..), InputData
+                     , OutputData, activationToInt
+                     )
 
 import qualified AI.Fann.Glue as Glue
 
@@ -83,7 +87,7 @@ destroy = Glue.destroy . fannRec
 -- | Will run input through the neural network, returning an array
 -- of outputs, the number of which being equal to the number of neurons
 -- in the output layer.
-run :: Fann -> Vec.Vector Float -> IO (Vec.Vector Float)
+run :: Fann -> InputData -> IO OutputData
 run fann input =
     fromCFloatVec <$> (Glue.run (fannRec fann) $ toCFloatVec input)
 
@@ -134,7 +138,7 @@ trainOnFile fann file epochs epochsPerReport desiredError =
 -- | Train one iteration with a set of inputs, and a set of desired outputs.
 -- The size of the input must be exact 'numInput' and the desired output must
 -- exact 'numOutput'.
-train :: Fann -> Vec.Vector Float -> Vec.Vector Float -> IO ()
+train :: Fann -> InputData -> OutputData -> IO ()
 train fann input output =
     Glue.train (fannRec fann) (toCFloatVec input) (toCFloatVec output)
 

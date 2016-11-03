@@ -2,7 +2,6 @@ module Main
     ( main
     ) where
 
-import Control.Concurrent (threadDelay)
 import Control.Monad (forM_)
 import Data.Vector.Storable ((!))
 import Text.Printf (printf)
@@ -11,7 +10,7 @@ import qualified Data.Vector.Storable as Vec
 
 import AI.Fann
 
-type Bundle = (Vec.Vector Float, Vec.Vector Float)
+type Bundle = (InputData, OutputData)
 
 bundleStream :: Int -> [Bundle] -> [Bundle]
 bundleStream _ [] = []
@@ -25,7 +24,7 @@ trainOnData fann n pattern = do
         --printf "Tick. MSE=%f\n" (mse fann)
         --threadDelay 25000
 
-testANN :: Fann -> Vec.Vector Float -> IO ()
+testANN :: Fann -> InputData -> IO ()
 testANN fann input = do
     output <- run fann input
     printf "and (%f, %f) => %f\n" (input ! 0) (input ! 1) (output ! 0)
